@@ -42,7 +42,36 @@ from sklearn.preprocessing import StandardScaler
 #import pyautogui
 
 # Cargar el modelo de regresión
-regressor = load('Modelopipeline.joblib')
+from joblib import load
+from pathlib import Path
+import streamlit as st
+
+# Configuración de rutas
+RUTA_MODELO = Path(__file__).parent / 'Modelopipeline.joblib'
+
+@st.cache_resource
+def cargar_modelo():
+    """Carga el modelo con caché para mejor rendimiento"""
+    if RUTA_MODELO.exists():
+        try:
+            modelo = load(RUTA_MODELO)
+            st.sidebar.success("✅ Modelo cargado")
+            return modelo
+        except Exception as e:
+            st.sidebar.error(f"Error al cargar modelo: {e}")
+            return None
+    else:
+        st.sidebar.warning(f"⚠️ Modelo no encontrado en: {RUTA_MODELO}")
+        # Opcional: mostrar archivos disponibles para debugging
+        archivos = list(RUTA_MODELO.parent.glob('*.joblib'))
+        if archivos:
+            st.sidebar.write("Archivos .joblib disponibles:")
+            for archivo in archivos:
+                st.sidebar.write(f"  - {archivo.name}")
+        return None
+
+# Cargar el modelo
+regressor = cargar_modelo()
 
 # Cargar el encoder
 #with open('encoderpipeline.pickle', 'rb') as f:
